@@ -60,9 +60,7 @@ if not rows_to_move:
     print("No rows older than 14 days; sheet already up-to-date.")
     exit(0)
 
-existing_data = historical_ws.get_all_values()[1:]  # skip header
-
-# Parse and sort all rows by timestamp in descending order
+# Sort the new rows by timestamp in descending order and insert at top
 def extract_timestamp(row):
     try:
         ts_str = row[ts_col - 1].strip()
@@ -77,12 +75,9 @@ def extract_timestamp(row):
     except Exception:
         return datetime.min
 
-combined_rows = rows_to_move + existing_data
-combined_rows.sort(key=extract_timestamp, reverse=True)
-
-historical_ws.clear()
-historical_ws.append_row(header)
-historical_ws.append_rows(combined_rows, value_input_option="USER_ENTERED")
+rows_to_move.sort(key=extract_timestamp, reverse=True)
+# Insert rows below the header (row 2) so they appear at the top of Historical
+historical_ws.insert_rows(rows_to_move, row=2, value_input_option="USER_ENTERED")
 
 num_cols = len(header)
 clear_ranges = [
